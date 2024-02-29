@@ -1,0 +1,7 @@
+tiny	2	0	official	intermediary	named
+c	A	ClassA	SomeClassButNamedBetter
+	c	some comment
+	f	a	a	field_a	myFieldButNamedCool
+		c	Field comment
+		c	Better comment
+c	B	B	OtherClass
