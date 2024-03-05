@@ -4,6 +4,7 @@ import net.fabricmc.stitch.commands.tinyv2.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +19,14 @@ class ZwirnTest {
         var unmerged = Zwirn.createOverlayTinyFile(base, merged, Arrays.asList("official", "named"), "official");
         TinyV2Writer.write(overlay, Path.of("overlay.tiny"));
         TinyV2Writer.write(unmerged, Path.of("unmerged.tiny"));
+    }
+
+    @Test
+    void mergeMCP() throws IOException {
+        try (var fs = FileSystems.newFileSystem(Path.of("mcp.zip"))) {
+            var merged = Zwirn.enrichSeargeWithMCP(TinyV2Reader.read(Path.of("searge.tiny")), fs.getPath("/"));
+            TinyV2Writer.write(merged, Path.of("mcp.tiny"));
+        }
     }
 
 

@@ -17,6 +17,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:24.0.0")
     implementation("net.minecraftforge:srgutils:0.4.13")
     implementation("net.fabricmc:tiny-remapper:0.8.6")
+    implementation("de.siegmar:fastcsv:3.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
