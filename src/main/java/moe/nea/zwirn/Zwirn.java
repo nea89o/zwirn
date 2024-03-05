@@ -21,6 +21,24 @@ public class Zwirn {
         return new TinyMerger(base, overlay, sharedNamespace).merge();
     }
 
+
+    public record RenameCommand(
+            String oldNamespaceName,
+            String newNamespaceName
+    ) {
+    }
+
+    public static @NotNull TinyFile renameNamespaces(
+            @NotNull TinyFile tinyFile,
+            @NotNull List<@NotNull RenameCommand> newNamespaceOrder
+    ) {
+        for (var renameCommand : newNamespaceOrder) {
+            if (!tinyFile.getHeader().getNamespaces().contains(renameCommand.oldNamespaceName()))
+                throw new IllegalArgumentException("Old namespace " + renameCommand.oldNamespaceName() + " not found");
+        }
+        return new RenameTask(tinyFile, newNamespaceOrder).rename();
+    }
+
     public static @NotNull TinyFile enrichSeargeWithMCP(@NotNull TinyFile searge, @NotNull Path mcpArchiveRoot) throws IOException {
         if (!searge.getHeader().getNamespaces().equals(Arrays.asList("left", "right")))
             throw new IllegalArgumentException("Searge namespaces need to be left and right");
