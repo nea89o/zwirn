@@ -24,6 +24,7 @@ dependencies {
 
 java {
     this.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    withSourcesJar()
 }
 
 tasks.test {

@@ -23,7 +23,7 @@ public class TinyDiffer {
         this.retainedNamespaces = retainedNamespaces;
         this.baseSharedIndex = base.getHeader().getNamespaces().indexOf(retainedNamespaces.get(0));// TODO: shared namespace argument
         this.overlaySharedIndex = overlay.getHeader().getNamespaces().indexOf(retainedNamespaces.get(0));
-
+        // TODO: remap descriptors
         retainedToNormalLookup = retainedNamespaces.stream()
                 .mapToInt(it -> base.getHeader().getNamespaces().indexOf(it))
                 .toArray();

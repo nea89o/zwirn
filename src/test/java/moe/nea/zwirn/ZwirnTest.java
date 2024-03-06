@@ -41,7 +41,7 @@ class ZwirnTest {
                                 Arrays.asList("A", "ClassA", "SomeClass"),
                                 Arrays.asList(
                                         new TinyMethod(
-                                                "a",
+                                                "(LA;)V",
                                                 Arrays.asList("a", "method_a", "doSomething"),
                                                 Arrays.asList(
                                                         new TinyMethodParameter(
@@ -54,7 +54,7 @@ class ZwirnTest {
                                                 Arrays.asList("method comment")
                                         )
                                 ),
-                                Arrays.asList(new TinyField("a",
+                                Arrays.asList(new TinyField("LA;",
                                         Arrays.asList("a", "field_a", "myField"), Arrays.asList("Field comment"))),
                                 Arrays.asList("some comment")
                         ),
