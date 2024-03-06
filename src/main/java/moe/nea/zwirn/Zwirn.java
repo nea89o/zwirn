@@ -40,6 +40,15 @@ public class Zwirn {
         return new RenameTask(tinyFile, newNamespaceOrder).rename();
     }
 
+    public static @NotNull TinyFile enrichSeargeWithConstructors(@NotNull TinyFile searge, @NotNull Path mcpSrgRoot) {
+        var joinedExc = mcpSrgRoot.resolve("joined.exc");
+        if (!Files.exists(joinedExc))
+            throw new IllegalArgumentException("joined.exc not found in MCP srg jar");
+        if (!searge.getHeader().getNamespaces().equals(Arrays.asList("left", "right")))
+            throw new IllegalArgumentException("Searge namespaces need to be left and right");
+        return new ConstructorEnrichmentTask(searge, joinedExc).enrich();
+    }
+
     public static @NotNull TinyFile enrichSeargeWithMCP(@NotNull TinyFile searge, @NotNull Path mcpArchiveRoot) throws IOException {
         if (!searge.getHeader().getNamespaces().equals(Arrays.asList("left", "right")))
             throw new IllegalArgumentException("Searge namespaces need to be left and right");

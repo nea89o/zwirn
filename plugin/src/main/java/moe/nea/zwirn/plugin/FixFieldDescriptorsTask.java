@@ -6,6 +6,7 @@ import net.fabricmc.stitch.commands.tinyv2.TinyV2Writer;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public abstract class FixFieldDescriptorsTask extends DefaultTask {
     @InputFile
     public abstract RegularFileProperty getInputTinyFile();
 
-    @InputFile
+    @OutputFile
     public abstract RegularFileProperty getOutputTinyFile();
 
     @TaskAction

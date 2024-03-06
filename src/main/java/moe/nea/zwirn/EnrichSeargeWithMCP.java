@@ -6,7 +6,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,6 +22,7 @@ public class EnrichSeargeWithMCP {
     private final Map<String, MCPField> fieldMap;
     private final Map<Integer, List<MCPParam>> paramMap;
     private final Map<String, MCPMethod> methodMap;
+    private final Map<String, MCPParam> constructorParamMap;
 
     // TODO: parse joined.exc for constructor indexes parameters
     public EnrichSeargeWithMCP(@NotNull TinyFile searge, Path fields, Path methods, Path params) throws IOException {
@@ -29,6 +33,7 @@ public class EnrichSeargeWithMCP {
         this.fieldMap = this.fields.stream().collect(Collectors.toMap(MCPField::searge, Function.identity()));
         this.methodMap = this.methods.stream().collect(Collectors.toMap(MCPMethod::searge, Function.identity()));
         this.paramMap = this.params.stream().filter(it -> it.methodId() != null).collect(Collectors.groupingBy(MCPParam::methodId, Collectors.toList()));
+        this.constructorParamMap = this.params.stream().collect(Collectors.toMap(MCPParam::searge, Function.identity()));
     }
 
     record MCPParam(
@@ -135,21 +140,30 @@ public class EnrichSeargeWithMCP {
     private TinyMethod mergeMethod(TinyMethod tinyMethod) {
         var srg = tinyMethod.getMethodNames().get(1);
         var mcpMethod = methodMap.get(srg);
-        List<TinyMethodParameter> params = new ArrayList<>();
+        Map<Integer, TinyMethodParameter> params = new HashMap<>();
         if (mcpMethod != null) {
             var mcpParams = paramMap.get(mcpMethod.methodId());
             if (mcpParams != null) for (var param : mcpParams) {
-                params.add(new TinyMethodParameter(
+                params.put(param.lvIndexHeuristic(), new TinyMethodParameter(
                         param.lvIndexHeuristic(),
                         Arrays.asList("p" + param.lvIndexHeuristic(), param.searge(), param.name()),
                         Arrays.asList()
                 ));
             }
         }
+        for (TinyMethodParameter parameter : tinyMethod.getParameters()) {
+            MCPParam mcpParam = constructorParamMap.get(parameter.getParameterNames().get(1));
+            if (mcpParam != null)
+                params.put(parameter.getLvIndex(), new TinyMethodParameter(
+                        parameter.getLvIndex(),
+                        Arrays.asList(parameter.getParameterNames().get(0), parameter.getParameterNames().get(1), mcpParam.name()),
+                        parameter.getComments()
+                ));
+        }
         return new TinyMethod(
                 tinyMethod.getMethodDescriptorInFirstNamespace(),
                 Arrays.asList(tinyMethod.getMethodNames().get(0), srg, mcpMethod == null ? srg : mcpMethod.name()),
-                params,
+                params.values(),
                 Arrays.asList(),
                 mcpMethod == null ? Arrays.asList() : Arrays.asList(mcpMethod.desc) // TODO: handle empty comment
         );

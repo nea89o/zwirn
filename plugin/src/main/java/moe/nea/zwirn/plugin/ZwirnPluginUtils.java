@@ -7,8 +7,10 @@ import net.fabricmc.stitch.commands.tinyv2.TinyFile;
 import net.fabricmc.stitch.commands.tinyv2.TinyV2Reader;
 import net.fabricmc.stitch.commands.tinyv2.TinyV2Writer;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.FileSystemLocationProperty;
+import org.gradle.api.file.FileSystemLocation;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Property;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +30,7 @@ class ZwirnPluginUtils {
         }
     }
 
-    public static Path getPath(FileSystemLocationProperty<?> property) {
+    public static Path getPath(Property<? extends FileSystemLocation> property) {
         return property.get().getAsFile().toPath();
     }
 
@@ -53,7 +55,7 @@ class ZwirnPluginUtils {
         return collection.getSingleFile().toPath();
     }
 
-    public static TinyFile readTiny(RegularFileProperty tinyFile) {
+    public static TinyFile readTiny(Property<RegularFile> tinyFile) {
         try {
             return TinyV2Reader.read(getPath(tinyFile));
         } catch (IOException e) {
@@ -61,8 +63,8 @@ class ZwirnPluginUtils {
         }
     }
 
-    public static void writeTiny(TinyFile tiny, RegularFileProperty tinyFile) {
-        try{
+    public static void writeTiny(TinyFile tiny, Property<RegularFile> tinyFile) {
+        try {
             TinyV2Writer.write(tiny, getPath(tinyFile));
         } catch (IOException e) {
             throw new RuntimeException(e);

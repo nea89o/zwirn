@@ -12,6 +12,15 @@ import java.util.HashMap;
 class ZwirnTest {
 
     @Test
+    void
+    Whatever() throws IOException {
+        TinyV2Writer.write(Zwirn.enrichSeargeWithConstructors(
+                TinyV2Reader.read(Path.of("mcpSrgWithFields.tiny")),
+                Path.of(".")
+        ),Path.of("mcpCons.tiny"));
+    }
+
+    @Test
     void diffTinyFile() throws Exception {
         var base = getBaseFile();
         var overlay = getOverlayFile();
