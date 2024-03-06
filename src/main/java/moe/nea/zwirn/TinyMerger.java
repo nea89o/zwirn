@@ -19,7 +19,8 @@ class TinyMerger {
     private final @NotNull Map<@NotNull String, @NotNull TinyClass> baseLUT;
     private final Integer[] baseToOverlayIndexMap;
     private final @NotNull List<@NotNull TinyClass> entries = new ArrayList<>();
-    private final SimpleRemapper remapper;
+    private final SimpleRemapper remapperBase;
+    private final SimpleRemapper remapperOverlay;
 
     public TinyMerger(TinyFile base, TinyFile overlay, String sharedNamespace) {
         this.base = base;
@@ -35,12 +36,15 @@ class TinyMerger {
                 .stream().map(it -> overlay.getHeader().getNamespaces().indexOf(it))
                 .map(it -> it < 0 ? null : it)
                 .toArray(Integer[]::new);
-        remapper = new SimpleRemapper(classOnlyMerge(), "__old", base.getHeader().getNamespaces().get(0));
+        var classMerged = classOnlyMerge();
+        remapperBase = new SimpleRemapper(classMerged, "__old_base", base.getHeader().getNamespaces().get(0));
+        remapperOverlay = new SimpleRemapper(classMerged, "__old_shared", base.getHeader().getNamespaces().get(0));
     }
 
     public TinyFile classOnlyMerge() {
         List<String> namespaces = new ArrayList<>();
-        namespaces.add("__old");
+        namespaces.add("__old_base");
+        namespaces.add("__old_shared");
         namespaces.addAll(base.getHeader().getNamespaces());
         return new TinyFile(
                 new TinyHeader(namespaces, 2, 0, new HashMap<>()),
@@ -52,7 +56,16 @@ class TinyMerger {
                         TinyFile::getClassEntries,
                         (tinyClass, tinyClass2) -> {
                             List<String> mergedNames = new ArrayList<>();
-                            mergedNames.add(tinyClass.getClassNames().get(0));
+                            if (tinyClass != null) {
+                                mergedNames.add(tinyClass.getClassNames().get(baseSharedIndex));
+                            } else {
+                                mergedNames.add(tinyClass2.getClassNames().get(overlaySharedIndex));
+                            }
+                            if (tinyClass2 != null) {
+                                mergedNames.add(tinyClass2.getClassNames().get(overlaySharedIndex));
+                            } else {
+                                mergedNames.add(tinyClass.getClassNames().get(baseSharedIndex));
+                            }
                             mergedNames.addAll(mergeNames(tinyClass, tinyClass2, TinyClass::getClassNames));
                             return new TinyClass(mergedNames);
                         }
@@ -137,7 +150,8 @@ class TinyMerger {
     private TinyField mergeField(@Nullable TinyField baseField, @Nullable TinyField overlayField) {
         var mergedNames = mergeNames(baseField, overlayField, TinyField::getFieldNames);
         return new TinyField(
-                remapper.remapFieldDescriptor(baseField != null ? baseField.getFieldDescriptorInFirstNamespace() : overlayField.getFieldDescriptorInFirstNamespace()),
+                baseField != null ? remapperBase.remapFieldDescriptor(baseField.getFieldDescriptorInFirstNamespace())
+                        : remapperOverlay.remapFieldDescriptor(overlayField.getFieldDescriptorInFirstNamespace()),
                 mergedNames,
                 mergeComments(baseField, overlayField, TinyField::getComments)
         );
@@ -145,8 +159,8 @@ class TinyMerger {
 
     private Collection<TinyMethod> mergeMethods(@Nullable TinyClass baseClass, @Nullable TinyClass overlayClass) {
         return mergeChildren(baseClass, overlayClass,
-                it -> it.getMethodNames().get(baseSharedIndex),
-                it -> it.getMethodNames().get(overlaySharedIndex),
+                it -> it.getMethodNames().get(baseSharedIndex) + remapperBase.remapMethodDescriptor(it.getMethodDescriptorInFirstNamespace()),
+                it -> it.getMethodNames().get(overlaySharedIndex) + remapperOverlay.remapMethodDescriptor(it.getMethodDescriptorInFirstNamespace()),
                 TinyClass::getMethods,
                 this::mergeMethod);
     }
@@ -154,7 +168,8 @@ class TinyMerger {
     private @NotNull TinyMethod mergeMethod(@Nullable TinyMethod baseMethod, @Nullable TinyMethod overlayMethod) {
         var mergedNames = mergeNames(baseMethod, overlayMethod, TinyMethod::getMethodNames);
         return new TinyMethod(
-                remapper.remapMethodDescriptor(baseMethod != null ? baseMethod.getMethodDescriptorInFirstNamespace() : overlayMethod.getMethodDescriptorInFirstNamespace()),
+                (baseMethod != null ? remapperBase.remapMethodDescriptor(baseMethod.getMethodDescriptorInFirstNamespace())
+                        : remapperOverlay.remapMethodDescriptor(overlayMethod.getMethodDescriptorInFirstNamespace())),
                 mergedNames,
                 mergeChildren(baseMethod, overlayMethod,
                         TinyMethodParameter::getLvIndex,

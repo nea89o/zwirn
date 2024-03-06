@@ -9,6 +9,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static moe.nea.zwirn.ZwirnUtil.TODO;
+
 public class TinyDiffer {
     private final TinyFile base;
     private final TinyFile overlay;
@@ -27,6 +29,8 @@ public class TinyDiffer {
         retainedToNormalLookup = retainedNamespaces.stream()
                 .mapToInt(it -> base.getHeader().getNamespaces().indexOf(it))
                 .toArray();
+        if (baseSharedIndex != 0 || overlaySharedIndex != 0)
+            TODO("add support for remapping descriptors");
     }
 
 
@@ -158,7 +162,10 @@ public class TinyDiffer {
             @Nullable TinyClass overlayClass) {
         var names = diffNamesWithMappings(baseClass, overlayClass);
         var fields = diffChildrenByMapping(baseClass, overlayClass, TinyClass::getFields, this::diffField);
-        var methods = diffChildrenByMapping(baseClass, overlayClass, TinyClass::getMethods, this::diffMethod);
+        var methods = diffChildren(baseClass, overlayClass,
+                it -> it.getMethodNames().get(baseSharedIndex) + it.getMethodDescriptorInFirstNamespace(),
+                it -> it.getMethodNames().get(overlaySharedIndex) + it.getMethodDescriptorInFirstNamespace(),
+                TinyClass::getMethods, this::diffMethod);
         var comments = diffComments(baseClass, overlayClass, TinyClass::getComments);
         return Retained.keep(
                 new TinyClass(
@@ -181,6 +188,7 @@ public class TinyDiffer {
             return Retained.empty(new ArrayList<>(commentExtractor.apply(baseObject)));
         var comments = new ArrayList<>(commentExtractor.apply(overlayObject));
         comments.removeAll(commentExtractor.apply(baseObject));
+        comments.removeIf(String::isEmpty);
         if (comments.isEmpty())
             return Retained.empty(comments);
         return Retained.strong(comments);
@@ -193,7 +201,7 @@ public class TinyDiffer {
         var comments = diffComments(baseMethod, overlayMethod, TinyMethod::getComments);
         return Retained.keep(
                 new TinyMethod(
-                        names.diff.get(0),
+                        baseMethod.getMethodDescriptorInFirstNamespace(),
                         names.diff,
                         params.diff,
                         variables.diff,
@@ -253,7 +261,7 @@ public class TinyDiffer {
         var comments = diffComments(baseField, overlayField, TinyField::getComments);
         return Retained.keep(
                 new TinyField(
-                        names.diff.get(0),
+                        baseField.getFieldDescriptorInFirstNamespace(),
                         names.diff,
                         comments.diff
                 ),

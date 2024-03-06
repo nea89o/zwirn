@@ -1,12 +1,16 @@
 package moe.nea.zwirn;
 
+import net.fabricmc.stitch.commands.tinyv2.TinyClass;
 import net.fabricmc.stitch.commands.tinyv2.TinyFile;
+import net.fabricmc.stitch.commands.tinyv2.TinyHeader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class Zwirn {
@@ -67,4 +71,9 @@ public class Zwirn {
             throw new IllegalArgumentException("Shared namespace must be retained");
         return new TinyDiffer(base, overlay, retainedNamespaces).createDiff();
     }
+
+    public static @NotNull TinyFile fixFieldDescriptorsFromJar(@NotNull TinyFile tinyFile, @NotNull Path classRoot) {
+        return new FieldSignatureFixer(tinyFile, classRoot).fix();
+    }
+
 }
