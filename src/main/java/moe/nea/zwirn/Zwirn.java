@@ -1,16 +1,13 @@
 package moe.nea.zwirn;
 
-import net.fabricmc.stitch.commands.tinyv2.TinyClass;
 import net.fabricmc.stitch.commands.tinyv2.TinyFile;
-import net.fabricmc.stitch.commands.tinyv2.TinyHeader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class Zwirn {
@@ -29,7 +26,7 @@ public class Zwirn {
     public record RenameCommand(
             String oldNamespaceName,
             String newNamespaceName
-    ) {
+    ) implements Serializable {
     }
 
     public static @NotNull TinyFile renameNamespaces(
