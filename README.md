@@ -2,20 +2,7 @@
 
 > Merging, diffing and converting of tiny/yarn and other mapping formats
 
-```
-    mappings {
-        searge()
-        mapping(rootProject.files("yarn.zip"), "yarn") {
-            outputs("yarn", true) { listOf("searge") }
-            mapNamespace("named", "yarn")
-            mapNamespace("intermediary", "searge")
-            sourceNamespace("searge")
-            renest()
-        }
-    }
-```
-
-
+These utilities are used in [ncp](https://github.com/nea89o/NeaCoderPack) to create custom MCP overlay mappings.
 
 
 
